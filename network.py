@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[25]:
+
+
 # %load network.py
 
 """
@@ -18,131 +24,184 @@ import random
 
 # Third-party libraries
 import numpy as np
+import mnist_loader
+import network_modded_bryte as ntwk
+from PIL import Image
 
-class Network(object):
 
-    def __init__(self, sizes):
-        """The list ``sizes`` contains the number of neurons in the
-        respective layers of the network.  For example, if the list
-        was [2, 3, 1] then it would be a three-layer network, with the
-        first layer containing 2 neurons, the second layer 3 neurons,
-        and the third layer 1 neuron.  The biases and weights for the
-        network are initialized randomly, using a Gaussian
-        distribution with mean 0, and variance 1.  Note that the first
-        layer is assumed to be an input layer, and by convention we
-        won't set any biases for those neurons, since biases are only
-        ever used in computing the outputs from later layers."""
-        self.num_layers = len(sizes)
-        self.sizes = sizes
-        self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
-        self.weights = [np.random.randn(y, x)
-                        for x, y in zip(sizes[:-1], sizes[1:])]
+# In[34]:
 
-    def feedforward(self, a):
-        """Return the output of the network if ``a`` is input."""
-        for b, w in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(w, a)+b)
-        return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, eta,
-            test_data=None):
-        """Train the neural network using mini-batch stochastic
-        gradient descent.  The ``training_data`` is a list of tuples
-        ``(x, y)`` representing the training inputs and the desired
-        outputs.  The other non-optional parameters are
-        self-explanatory.  If ``test_data`` is provided then the
-        network will be evaluated against the test data after each
-        epoch, and partial progress printed out.  This is useful for
-        tracking progress, but slows things down substantially."""
+w, h = 512, 512
+data = np.zeros((h, w, 3), dtype = np.uint8)
+for i in range(w):
+    for j in range(h):
+        for k in range(3):
+            data[i, j, k] = np.random.randint(255)
 
-        training_data = list(training_data)
-        n = len(training_data)
+data[4:100, 400:450, 1:] = [200, 200]          
+img = Image.fromarray(data, 'RGB')
+#img.save('my.png')
+img.show()
 
-        if test_data:
-            test_data = list(test_data)
-            n_test = len(test_data)
-        for j in range(epochs):
-            random.shuffle(training_data)
-            mini_batches = [
-                training_data[k:k+mini_batch_size]
-                for k in range(0, n, mini_batch_size)]
-            for mini_batch in mini_batches:
-                self.update_mini_batch(mini_batch, eta)
-            if test_data:
-                print("Epoch {} : {} / {}".format(j,self.evaluate(test_data),n_test));
-            else:
-                print("Epoch {} complete".format(j))
 
-    def update_mini_batch(self, mini_batch, eta):
-        """Update the network's weights and biases by applying
-        gradient descent using backpropagation to a single mini batch.
-        The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
-        is the learning rate."""
-        nabla_b = [np.zeros(b.shape) for b in self.biases]
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
-        for x, y in mini_batch:
-            delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w-(eta/len(mini_batch))*nw
-                        for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b-(eta/len(mini_batch))*nb
-                       for b, nb in zip(self.biases, nabla_b)]
+# In[35]:
 
-    def backprop(self, x, y):
-        """Return a tuple ``(nabla_b, nabla_w)`` representing the
-        gradient for the cost function C_x.  ``nabla_b`` and
-        ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
-        to ``self.biases`` and ``self.weights``."""
-        nabla_b = [np.zeros(b.shape) for b in self.biases]
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
-        # feedforward
-        activation = x
-        activations = [x] # list to store all the activations, layer by layer
-        zs = [] # list to store all the z vectors, layer by layer
-        for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, activation)+b
-            zs.append(z)
-            activation = sigmoid(z)
-            activations.append(activation)
-        # backward pass
-        delta = self.cost_derivative(activations[-1], y) * \
-            sigmoid_prime(zs[-1])
-        nabla_b[-1] = delta
-        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-        # Note that the variable l in the loop below is used a little
-        # differently to the notation in Chapter 2 of the book.  Here,
-        # l = 1 means the last layer of neurons, l = 2 is the
-        # second-last layer, and so on.  It's a renumbering of the
-        # scheme in the book, used here to take advantage of the fact
-        # that Python can use negative indices in lists.
-        for l in range(2, self.num_layers):
-            z = zs[-l]
-            sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
-            nabla_b[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
-        return (nabla_b, nabla_w)
 
-    def evaluate(self, test_data):
-        """Return the number of test inputs for which the neural
-        network outputs the correct result. Note that the neural
-        network's output is assumed to be the index of whichever
-        neuron in the final layer has the highest activation."""
-        test_results = [(np.argmax(self.feedforward(x)), y)
-                        for (x, y) in test_data]
-        return sum(int(x == y) for (x, y) in test_results)
+w, h = 512, 512
+data = np.zeros((h, w, 3), dtype = np.uint8)
 
-    def cost_derivative(self, output_activations, y):
-        """Return the vector of partial derivatives \partial C_x /
-        \partial a for the output activations."""
-        return (output_activations-y)
+data[236:320, 256:512, :] = [200, 200, 200]          
+data[5, 6:10, 1:2]
+img = Image.fromarray(data, 'RGB')
+#img.save('my.png')
+img.show()
 
-#### Miscellaneous functions
-def sigmoid(z):
-    """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
 
-def sigmoid_prime(z):
-    """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
+# In[74]:
+
+
+training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
+net = ntwk.Network([784, 15, 10])
+net.SGD(training_data, 50, 10, 0.01, test_data = test_data)
+
+
+# In[4]:
+
+
+av = net.feedbackward(5)
+x = av[-1].reshape(28, 28) * 256
+img = Image.fromarray(x)
+img.show()
+
+
+# In[31]:
+
+
+net.biases = net.biases[::-1]
+net.weights = net.weights[::-1]
+#for i in range(len(net.weights)):
+#    net.weights[i] = np.transpose(net.weights[i])
+
+
+# In[93]:
+
+
+#create the output of 4
+
+y = 4
+y_vec = np.zeros((1, 10)) 
+y_vec[0, y] = 1
+c = create(y_vec)
+c = c*256
+
+#chara = np.reshape(c, [28, 28])
+img = Image.fromarray(chara)
+img.show()
+
+
+# In[49]:
+
+
+[n.shape for n in net.weights]
+c.shape
+
+
+# In[72]:
+
+
+def create(a):
+    """Return the reverse input of the network if ``a`` is desired output."""
+    net.biases = net.biases[::-1]
+    net.weights = net.weights[::-1]
+    
+    for b, w in zip(net.biases, net.weights):
+        a = ntwk.sigmoid(np.dot(a, w))
+    
+    net.biases = net.biases[::-1]
+    net.weights = net.weights[::-1]
+    return a
+
+
+# In[72]:
+
+
+def fb(y):
+    y_vec = np.zeros((10, 1)) + 0.000000001
+    y_vec[y, 0] = 0.999999999
+    activation = y_vec
+    activations = [y_vec] # list to store all the activations, layer by layer
+    vs = [] # list to store all the z vectors, layer by layer 
+    for b, w in zip(net.biases[::-1], net.weights[::-1]):
+        v = ntwk.logit(activation)
+        print(activation)
+        activation = np.dot(np.linalg.pinv(w), v - b)
+        vs.append(v)
+        activations.append(activation)
+    return activations
+
+def ff(x):
+    activation = x
+    activations = [x]
+    zs = []
+    for b, w in zip(net.biases, net.weights):
+        z = np.dot(w, activation)+b
+        zs.append(z)
+        activation = ntwk.sigmoid(z)
+        activations.append(activation)
+    return activations
+
+
+# In[73]:
+
+
+input = np.random.rand(784, 1)
+act = ff(input)
+av = fb(4)
+
+
+# In[84]:
+
+
+e = 0.001
+y = np.zeros((10, 1)) + e
+y[3] = 1 - e
+x = input
+a = np.dot(np.linalg.pinv(net.weights[1]), ntwk.logit(y) - net.biases[1])
+u = ntwk.sigmoid(np.dot(net.weights[0], x) + net.biases[0])
+
+print(a)
+print(u)
+
+
+# In[70]:
+
+
+ntwk.sigmoid(-0.00001)
+
+
+# In[88]:
+
+
+y = 3;
+y_vec = np.zeros((10, 1))
+y_vec[y, 0]
+
+
+# In[82]:
+
+
+np.zeros((10, 1)).shape
+
+
+# In[41]:
+
+
+net.feedbackward(3)
+
+
+# In[ ]:
+
+
+
+
