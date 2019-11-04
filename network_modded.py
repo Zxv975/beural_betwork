@@ -18,7 +18,6 @@ import random
 
 # Third-party libraries
 import numpy as np
-from
 
 class Network(object):
 
