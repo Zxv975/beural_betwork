@@ -1,0 +1,95 @@
+# %% codecell
+# %load network.py
+
+"""
+network.py
+~~~~~~~~~~
+IT WORKS
+
+A module to implement the stochastic gradient descent learning
+algorithm for a feedforward neural network.  Gradients are calculated
+using backpropagation.  Note that I have focused on making the code
+simple, easily readable, and easily modifiable.  It is not optimized,
+and omits many desirable features.
+"""
+
+#### Libraries
+# Standard library
+import random
+
+# Third-party libraries
+import numpy as np
+import mnist_loader
+import network
+# %% codecell
+training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
+nets = [network.Network([784, 10]) for i in range(2)]
+nets[1].biases = nets[0].biases.copy()
+nets[1].sizes = nets[0].sizes.copy
+nets[1].weights = nets[0].weights.copy()
+# %% codecell
+print(id(nets[0].biases))
+print(id(nets[1].biases))
+# %% codecell
+nets[0].SGD(training_data, 3, 10, 0.01, test_data=test_data)
+# %% codecell
+nets[1].SGD(training_data, 3, 10, 1, test_data=test_data)
+# %% codecell
+nets = [network.Network([784,10])]
+# %% codecell
+import network_modded.py as network
+# %% codecell
+nets = network.Network([784,10])
+# %% codecell
+finalNum = [0,0,0,0,0,0,0,0,1,0]
+print(nets.feedback(finalNUm))
+# %% codecell
+import network_modded
+# %% codecell
+nets = network_modded.Network([784,10])
+finalNum = np.array([0,0,0,0,0,0,0,0,0.8,0])
+print(nets.feedback(finalNum))
+# %% codecell
+network_modded.logit(np.array([0.5,0.7]))
+# %% codecell
+from PIL import Image
+# %% codecell
+w, h = 512, 512
+data = np.zeros((h, w, 3), dtype=np.uint8)
+
+for i in range(512):
+    if (i//10)%2 != 0:
+        data[0:512, i-10:i] = [255,0,0]
+        #print(i)
+        print((i//10)%2)
+    else:
+        data[0:512, i-10:i] = [0,255,255]
+        print((i//10)%2)
+
+img = Image.fromarray(data, 'RGB')
+#img.save('my.png')
+img.show()
+# %% codecell
+w, h = 512, 512
+data = np.zeros((h, w, 3), dtype=np.uint8)
+
+for i in range(w-10):
+    if (i//10)%2 != 0:
+        data[i:i+10, 0:h] = [255,0,0]
+        print((i//10)%2)
+    else:
+        print((i//10)%2)
+        pass
+
+
+img = Image.fromarray(data, 'RGB')
+#img.save('my.png')
+img.show()
+# %% codecell
+data = np.zeros((h, w, 3), dtype=np.uint8)
+data[::10, :, :] = [255, 0, 0]
+
+img = Image.fromarray(data, 'RGB')
+#img.save('my.png')
+img.show()
+# %% codecell
