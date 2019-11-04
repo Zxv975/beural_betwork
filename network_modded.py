@@ -18,6 +18,7 @@ import random
 
 # Third-party libraries
 import numpy as np
+from
 
 class Network(object):
 
@@ -29,7 +30,7 @@ class Network(object):
         and the third layer 1 neuron.  The biases and weights for the
         network are initialized randomly, using a Gaussian
         distribution with mean 0, and variance 1.  Note that the first
-        layer is assumed to be an input layer, and by convention we
+        layer is assumed to be an input , and by convention we
         won't set any biases for those neurons, since biases are only
         ever used in computing the outputs from later layers."""
         self.num_layers = len(sizes)
@@ -43,6 +44,22 @@ class Network(object):
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
+
+    def feedback(self, a):
+        """Return a vecter of values that the network thinks is a handwritten digit, if ''a'' is the input."""
+        """v = np.linalg.pinv(sigmoid(u))"""
+
+        activation = a
+        activations = [a]
+        vs = []
+        for b, w in zip(self.biases[::-1], self.weights[::-1]):
+            v = logit(activation)
+            vs.append(v)
+
+            activation = np.dot(np.linalg.pinv(w),(v-b))
+            activations.append(activation)
+        return activations
+
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             test_data=None):
@@ -146,3 +163,10 @@ def sigmoid(z):
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
     return sigmoid(z)*(1-sigmoid(z))
+
+def logit(u):
+    """Inverse sigmoid function"""
+    return np.log(u/(1-u))
+
+def tan(x):
+    return x
